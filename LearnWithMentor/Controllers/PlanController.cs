@@ -78,7 +78,7 @@ namespace LearnWithMentor.Controllers
         [Route("api/plan/{planid}/group/{groupid}")]
         public HttpResponseMessage GetInfo(int groupid, int planid)
         {
-            
+
             var info = planService.GetInfo(groupid, planid);
             if (info == null)
             {
@@ -115,13 +115,22 @@ namespace LearnWithMentor.Controllers
         [Route("api/plan/some")]
         public HttpResponseMessage GetSome(int prevAmount, int amount)
         {
-            var dtoList = planService.GetSomeAmount(prevAmount, amount);
-            if (dtoList == null || dtoList.Count == 0)
+            try
             {
-                const string errorMessage = "No plans in database.";
-                return Request.CreateErrorResponse(HttpStatusCode.NoContent, errorMessage);
+                var dtoList = planService.GetSomeAmount(prevAmount, amount);
+                if (dtoList == null || dtoList.Count == 0)
+                {
+                    const string errorMessage = "No plans in database.";
+                    return Request.CreateErrorResponse(HttpStatusCode.NoContent, errorMessage);
+                }
+                return Request.CreateResponse<IEnumerable<PlanDto>>(HttpStatusCode.OK, dtoList);
             }
-            return Request.CreateResponse<IEnumerable<PlanDto>>(HttpStatusCode.OK, dtoList);
+            catch(Exception ex)
+            {
+                return Request.CreateResponse<Exception>(HttpStatusCode.OK, ex);
+            }
+
+
         }
 
         /// <summary>
@@ -264,7 +273,7 @@ namespace LearnWithMentor.Controllers
         [Authorize(Roles = "Mentor, Admin")]
         [HttpPut]
         [Route("api/plan/{id}/task/{taskId}")]
-        public HttpResponseMessage PutTaskToPlan(int id, int taskId,string sectionId, string priority)
+        public HttpResponseMessage PutTaskToPlan(int id, int taskId, string sectionId, string priority)
         {
             try
             {
@@ -400,7 +409,7 @@ namespace LearnWithMentor.Controllers
             {
                 return Get();
             }
-            var lines = q.Split(new [] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            var lines = q.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             var dto = planService.Search(lines);
             if (dto == null || dto.Count == 0)
             {
